@@ -32,16 +32,26 @@ def generate_hypothetical_population(n):
 def is_eligible_for_screening(individual, recommendation):
     age = individual['age']
     BMI = individual['BMI']
-    risk_factor_count = sum([individual['physical_inactivity'],
-                             individual['hypertension'],
-                             individual['hdl'] < 35 or individual['tg'] > 250,
-                             individual['family_history'],
-                             individual['gestational_diabetes'],
-                             individual['A1c'] >= 5.7 or individual['IFG'] >= 100 or individual['IGT'] >= 140,
-                             individual['other_risk_factors'],
-                             individual['delivered_baby_over_9lbs'],
-                             individual['antipsychotic_therapy'],
-                             individual['sleep_disorders']])
+    gender = individual['gender']
+    race_ethnicity = individual['race_ethnicity']
+    last_screened = individual['last_screened']
+
+    risk_factors = {
+        'physical_inactivity': individual['physical_inactivity'],
+        'hypertension': individual['hypertension'],
+        'hdl_risk': individual['HDL'] < 35,
+        'tg_risk': individual['TG'] > 250,
+        'family_history': individual['family_history'],
+        'gestational_diabetes': individual['gestational_diabetes'],
+        'glucose_tolerance_risk': individual['glucose_tolerance'],
+        'pcos': individual['PCOS'],
+        'history_of_cvd': individual['history_of_CVD'],
+        'baby_weight_risk': individual['baby_weight_risk'],
+        'antipsychotic_therapy': individual['antipsychotic_therapy'],
+        'sleep_disorder_risk': individual['sleep_disorder_risk']
+    }
+
+    risk_factor_count = sum(risk_factors.values())
 
     if recommendation == "USPSTF":
         return 40 <= age <= 70 and BMI >= 25
@@ -51,6 +61,10 @@ def is_eligible_for_screening(individual, recommendation):
         return age >= 45 and risk_factor_count >= 2
     else:
         return False
+
+# (Other parts of the code remain the same)
+
+
 
 def apply_screening(population, recommendation, test_cost):
     cost = 0
