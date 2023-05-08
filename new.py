@@ -7,7 +7,7 @@ def generate_hypothetical_population(n):
     population = []
     for _ in range(n):
         individual = {
-            'age': np.random.randint(18, 90),
+            'age': np.random.randint(18, 90), #change these distributions based on research data
             'BMI': np.random.uniform(18.5, 45),
             'gender': np.random.choice(['male', 'female']),
             'gestational_diabetes': np.random.choice([0, 1], p=[0.9, 0.1]),
@@ -61,10 +61,6 @@ def is_eligible_for_screening(individual, recommendation):
         return age >= 45 and risk_factor_count >= 2
     else:
         return False
-
-# (Other parts of the code remain the same)
-
-
 
 def apply_screening(population, recommendation, test_cost):
     cost = 0
