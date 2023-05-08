@@ -1,18 +1,18 @@
 import numpy as np
 import pandas as pd
-
+# Define the transition probabilities between different health states
 transition_probabilities = {
     'Healthy': {'Healthy': 0.95, 'Pre-diabetes': 0.04, 'Diabetes': 0.01},
     'Pre-diabetes': {'Healthy': 0.1, 'Pre-diabetes': 0.85, 'Diabetes': 0.05},
     'Diabetes': {'Healthy': 0, 'Pre-diabetes': 0, 'Diabetes': 1},
 }
-
+# Define the costs associated with different health states
 state_costs = {
     'Healthy': 0,
     'Pre-diabetes': 100,
     'Diabetes': 500,
 }
-
+# Define a function to generate a hypothetical population
 def generate_hypothetical_population(n):
     np.random.seed(42)
     population = []
@@ -39,9 +39,8 @@ def generate_hypothetical_population(n):
         }
         population.append(individual)
     return population
-
-
-
+# Define a function to determine if an individual is eligible for screening based on
+# their risk factors and the recommended guideline
 def is_eligible_for_screening(individual, recommendation, current_year):
     age = individual['age']
     BMI = individual['BMI']
@@ -80,7 +79,8 @@ def is_eligible_for_screening(individual, recommendation, current_year):
     else:
         return False
 
-
+# Each individual in the hypothetical population
+# will only choose one guideline to see if they are eligible for screening.
 def select_screening_guideline(individual):
     eligible_guidelines = []
     if is_eligible_for_screening(individual, "USPSTF", current_year):
