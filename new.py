@@ -1,18 +1,32 @@
 import numpy as np
 import pandas as pd
+
 # Define the transition probabilities between different health states
 transition_probabilities = {
     'Healthy': {'Healthy': 0.95, 'Pre-diabetes': 0.04, 'Diabetes': 0.01},
     'Pre-diabetes': {'Healthy': 0.1, 'Pre-diabetes': 0.85, 'Diabetes': 0.05},
     'Diabetes': {'Healthy': 0, 'Pre-diabetes': 0, 'Diabetes': 1},
 }
+
 # Define the costs associated with different health states
 state_costs = {
-    'Healthy': 0,
-    'Pre-diabetes': 100,
-    'Diabetes': 500,
+    'USPSTF': {
+        'Healthy': 0,
+        'Pre-diabetes': 100,
+        'Diabetes': 500,
+    },
+    'ADA': {
+        'Healthy': 0,
+        'Pre-diabetes': 100,
+        'Diabetes': 600,
+    },
+    'AACE': {
+        'Healthy': 0,
+        'Pre-diabetes': 150,
+        'Diabetes': 700,
+    }
 }
-# Define a function to generate a hypothetical population
+
 def generate_hypothetical_population(n):
     np.random.seed(42)
     population = []
@@ -81,7 +95,7 @@ def is_eligible_for_screening(individual, recommendation, current_year):
 
 # Each individual in the hypothetical population
 # will only choose one guideline to see if they are eligible for screening.
-def select_screening_guideline(individual):
+def select_screening_guideline(individual, current_year):  # Add current_year as an argument
     eligible_guidelines = []
     if is_eligible_for_screening(individual, "USPSTF", current_year):
         eligible_guidelines.append("USPSTF")
@@ -95,8 +109,9 @@ def select_screening_guideline(individual):
         selected_guideline = None
     return selected_guideline
 
-def screen_individual(individual, guideline):
+def screen_individual(individual, guideline, current_year):  # Add current_year as an argument
     health_state = individual['health_state']
+    cost = state_costs[guideline][health_state]
     if guideline == "USPSTF" and health_state in ["Pre-diabetes", "Diabetes"]:
         health_state = "Healthy"
     elif guideline == "ADA" and health_state == "Diabetes":
@@ -104,25 +119,36 @@ def screen_individual(individual, guideline):
     elif guideline == "AACE" and health_state == "Pre-diabetes":
         health_state = "Diabetes"
     individual['health_state'] = health_state
-    individual['last_screened'] = current_year
+    individual['last_screened'] = current_year  # Update the last_screened value
+    individual['cost'] = cost
     return individual
+
+# Update the run_simulation function as well:
 
 def run_simulation(population, num_years):
     results = []
+    costs = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
+
     for year in range(num_years):
-        global current_year
         current_year = year
         screened_counts = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
+
         for individual in population:
-            guideline = select_screening_guideline(individual)
+            guideline = select_screening_guideline(individual, current_year)
             if guideline is not None:
                 screened_counts[guideline] += 1
-                individual = screen_individual(individual, guideline)
-        results.append(screened_counts)
-    return results
+                individual = screen_individual(individual, guideline, current_year)  # Pass current_year as an argument
+                costs[guideline] += individual['cost']
 
-# 10 years:
+        results.append(screened_counts)
+
+    return results, costs
+
+# Run the modified code
 population = generate_hypothetical_population(1000)
-results = run_simulation(population, 10)
+results, costs = run_simulation(population, 10)
 df_results = pd.DataFrame(results)
+print("Screened counts for each guideline:")
 print(df_results)
+print("\nTotal costs for each guideline:")
+print(costs)
