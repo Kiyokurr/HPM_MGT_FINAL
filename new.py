@@ -138,7 +138,7 @@ def screen_individual(individual, guideline, current_year):  # Add current_year 
     individual['cost'] = cost
     return individual
 
-# Update the run_simulation function as well:
+# Update the run_simulation function:
 
 def run_simulation(population, num_years, selected_guideline):
     results = []
