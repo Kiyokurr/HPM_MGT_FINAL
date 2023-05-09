@@ -3,27 +3,35 @@ import pandas as pd
 
 # Define the transition probabilities between different health states
 transition_probabilities = {
-    'Healthy': {'Healthy': 0.791, 'Pre-diabetes': 0.186, 'Diabetes': 0.033},
-    'Pre-diabetes': {'Healthy': 0.513, 'Pre-diabetes': 0.315, 'Diabetes': 0.172},
-    'Diabetes': {'Healthy': 0.078, 'Pre-diabetes': 0.197, 'Diabetes': 0.725},
+    'Healthy': {'Healthy': 0.791, 'Uncaught PD': 0.186, 'Caught PD': 0.0, 'Diabetes': 0.033, 'Dead': 0.0},
+    'Uncaught PD': {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172, 'Dead': 0.0},
+    'Caught PD':  {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172, 'Dead': 0.0},
+    'Diabetes': {'Healthy': 0.078, 'Uncaught PD': 0.197, 'Caught PD': 0.0, 'Diabetes': 0.725, 'Dead': 0.0},
+    'Dead': {'Healthy': 0.078, 'Uncaught PD': 0.197, 'Caught PD': 0.0, 'Diabetes': 0.725, 'Dead': 0.0},
 }
 
 # Define the costs associated with different health states
 state_costs = {
     'USPSTF': {
         'Healthy': 0,
-        'Pre-diabetes': 100,
+        'Uncaught PD': 100,
+        'Caught PD': 100,
         'Diabetes': 500,
+        'Dead': 0,
     },
     'ADA': {
         'Healthy': 0,
-        'Pre-diabetes': 100,
+        'Uncaught PD': 100,
+        'Caught PD': 100,
         'Diabetes': 600,
+        'Dead': 0,
     },
     'AACE': {
         'Healthy': 0,
-        'Pre-diabetes': 150,
+        'Uncaught PD': 150,
+        'Caught PD': 150,
         'Diabetes': 700,
+        'Dead': 0,
     }
 }
 
@@ -52,7 +60,7 @@ def generate_hypothetical_population(n):
             'baby_weight_risk': int(np.random.choice([0, 1], p=[0.9, 0.1])),
             'antipsychotic_therapy': int(np.random.choice([0, 1], p=[0.95, 0.05])),
             'sleep_disorder_risk': int(np.random.choice([0, 1], p=[0.9, 0.1])),
-            'health_state': np.random.choice(['Healthy', 'Pre-diabetes', 'Diabetes'], p=[0.7, 0.25, 0.05]),
+            'health_state': np.random.choice(['Healthy', 'Uncaught PD', 'Caught PD', 'Diabetes'], p=[0.7, 0.25, 0.05]),
             'last_screened': -999, # -999 means this person has never screen before
             'TG': np.random.normal(loc=129, scale=50),
         }
@@ -130,7 +138,7 @@ def screen_individual(individual, guideline, current_year):  # Add current_year 
     if guideline == "USPSTF" and health_state in ["Pre-diabetes", "Diabetes"]:
         health_state = "Healthy"
     elif guideline == "ADA" and health_state == "Diabetes":
-        health_state = "Pre-diabetes"
+        health_state = "Uncaught PD"
     elif guideline == "AACE" and health_state == "Pre-diabetes":
         health_state = "Diabetes"
     individual['health_state'] = health_state
