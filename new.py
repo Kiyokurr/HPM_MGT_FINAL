@@ -140,17 +140,17 @@ def screen_individual(individual, guideline, current_year):  # Add current_year 
 
 # Update the run_simulation function as well:
 
-def run_simulation(population, num_years):
+def run_simulation(population, num_years, selected_guideline):
     results = []
     costs = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
+    screened_counts = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
 
     for year in range(num_years):
         current_year = year
-        screened_counts = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
 
         for individual in population:
-            guideline = select_screening_guideline(individual, current_year)
-            if guideline is not None:
+            guideline = selected_guideline
+            if is_eligible_for_screening(individual, guideline, current_year):
                 screened_counts[guideline] += 1
                 individual = screen_individual(individual, guideline, current_year)  # Pass current_year as an argument
                 costs[guideline] += individual['cost']
@@ -159,11 +159,33 @@ def run_simulation(population, num_years):
 
     return results, costs
 
+
 # Run the modified code
-population = generate_hypothetical_population(1000)
-results, costs = run_simulation(population, 10)
-df_results = pd.DataFrame(results)
-print("Screened counts for each guideline:")
-print(df_results)
-print("\nTotal costs for each guideline:")
-print(costs)
+population_USPSTF = generate_hypothetical_population(1000)
+results_USPSTF, costs_USPSTF = run_simulation(population_USPSTF, 10, "USPSTF")
+
+population_ADA = generate_hypothetical_population(1000)
+results_ADA, costs_ADA = run_simulation(population_ADA, 10, "ADA")
+
+population_AACE = generate_hypothetical_population(1000)
+results_AACE, costs_AACE = run_simulation(population_AACE, 10, "AACE")
+
+df_results_USPSTF = pd.DataFrame(results_USPSTF)
+df_results_ADA = pd.DataFrame(results_ADA)
+df_results_AACE = pd.DataFrame(results_AACE)
+
+print("Screened counts for USPSTF guideline:")
+print(df_results_USPSTF)
+print("\nTotal costs for USPSTF guideline:")
+print(costs_USPSTF)
+
+print("\nScreened counts for ADA guideline:")
+print(df_results_ADA)
+print("\nTotal costs for ADA guideline:")
+print(costs_ADA)
+
+print("\nScreened counts for AACE guideline:")
+print(df_results_AACE)
+print("\nTotal costs for AACE guideline:")
+print(costs_AACE)
+
