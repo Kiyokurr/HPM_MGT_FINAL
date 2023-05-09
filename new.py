@@ -53,13 +53,18 @@ def generate_hypothetical_population(n):
             'antipsychotic_therapy': int(np.random.choice([0, 1], p=[0.95, 0.05])),
             'sleep_disorder_risk': int(np.random.choice([0, 1], p=[0.9, 0.1])),
             'health_state': np.random.choice(['Healthy', 'Pre-diabetes', 'Diabetes'], p=[0.7, 0.25, 0.05]),
-            'last_screened': -999,
-            'TG': np.random.randint(50, 300),
-            'HDL': np.random.randint(30, 100)
-            # Other attributes...
+            'last_screened': -999, # -999 means this person has never screen before
+            'TG': np.random.normal(loc=129, scale=50),
         }
-        if pregnant:
-            individual['gestational_diabetes'] = np.random.choice([0, 1], p=[0.95, 0.05])
+        HDL_below_40 = np.random.choice([True, False], p=[0.17, 0.83])
+        if HDL_below_40:
+            individual['HDL'] = np.random.uniform(10, 39)
+        else:
+            individual['HDL'] = np.random.uniform(40, 100)
+        if gender == 'female':
+            individual['PCOS'] = np.random.choice([0, 1], p=[1 - 0.09, 0.09])  # Use the higher estimate of 12%
+        else:
+            individual['PCOS'] = 0  # Male individuals don't have PCOS
         population.append(individual)
     return population
 
