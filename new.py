@@ -3,9 +3,9 @@ import pandas as pd
 
 # Define the transition probabilities between different health states
 transition_probabilities = {
-    'Healthy': {'Healthy': 0.95, 'Pre-diabetes': 0.04, 'Diabetes': 0.01},
-    'Pre-diabetes': {'Healthy': 0.1, 'Pre-diabetes': 0.85, 'Diabetes': 0.05},
-    'Diabetes': {'Healthy': 0, 'Pre-diabetes': 0, 'Diabetes': 1},
+    'Healthy': {'Healthy': 0.791, 'Pre-diabetes': 0.186, 'Diabetes': 0.033},
+    'Pre-diabetes': {'Healthy': 0.513, 'Pre-diabetes': 0.315, 'Diabetes': 0.172},
+    'Diabetes': {'Healthy': 0.078, 'Pre-diabetes': 0.197, 'Diabetes': 0.725},
 }
 
 # Define the costs associated with different health states
@@ -31,11 +31,17 @@ def generate_hypothetical_population(n):
     np.random.seed(42)
     population = []
     for _ in range(n):
+        gender = np.random.choice(['male', 'female'])
+        age = np.random.randint(18, 90)
+        pregnant = False
+        if gender == 'female' and 18 <= age <= 45:
+            pregnant = np.random.choice([False, True], p=[0.95, 0.05])
         individual = {
-            'age': np.random.randint(18, 90),
-            'BMI': np.random.uniform(18.5, 45),
-            'gender': np.random.choice(['male', 'female']),
-            'gestational_diabetes': np.random.choice([0, 1], p=[0.9, 0.1]),
+            'age': age,
+            'BMI': np.random.normal(loc=23, scale=4),
+            'gender': gender,
+            'pregnant': pregnant,
+            'gestational_diabetes': 0,
             'family_history': np.random.choice([0, 1], p=[0.8, 0.2]),
             'race_ethnicity': np.random.choice(['low_risk', 'high_risk'], p=[0.7, 0.3]),
             'physical_inactivity': int(np.random.choice([0, 1], p=[0.6, 0.4])),
@@ -49,10 +55,14 @@ def generate_hypothetical_population(n):
             'health_state': np.random.choice(['Healthy', 'Pre-diabetes', 'Diabetes'], p=[0.7, 0.25, 0.05]),
             'last_screened': -999,
             'TG': np.random.randint(50, 300),
-            'HDL': np.random.randint(30, 100) # Add HDL key with random integer value
+            'HDL': np.random.randint(30, 100)
+            # Other attributes...
         }
+        if pregnant:
+            individual['gestational_diabetes'] = np.random.choice([0, 1], p=[0.95, 0.05])
         population.append(individual)
     return population
+
 # Define a function to determine if an individual is eligible for screening based on
 # their risk factors and the recommended guideline
 def is_eligible_for_screening(individual, recommendation, current_year):
