@@ -132,19 +132,36 @@ def select_screening_guideline(individual, current_year):  # Add current_year as
         selected_guideline = None
     return selected_guideline
 
-def screen_individual(individual, guideline, current_year):  # Add current_year as an argument
+
+#  If they are eligible and not in one of the excluded health states, the screening is performed.
+#  If the individual is healthy, the screening has no effect on their health state,
+#  but the screening cost is added to their current cost.
+#  If the individual is in the "Uncaught PD" state, there is a probability that they will be caught during screening and their health state will change to "Caught PD".
+#  In this case, the screening cost is also added to their current cost, discounted based on the number of years since their birth year.
+def screen_individual(individual, guideline, current_year):
     health_state = individual['health_state']
     cost = state_costs[guideline][health_state]
-    if guideline == "USPSTF" and health_state in ["Pre-diabetes", "Diabetes"]:
-        health_state = "Healthy"
-    elif guideline == "ADA" and health_state == "Diabetes":
-        health_state = "Uncaught PD"
-    elif guideline == "AACE" and health_state == "Pre-diabetes":
-        health_state = "Diabetes"
-    individual['health_state'] = health_state
-    individual['last_screened'] = current_year  # Update the last_screened value
-    individual['cost'] = cost
-    return individual
+
+    # Check if individual is eligible for screening
+    if individual['age'] >= screening_ages[guideline][health_state] and health_state not in ['Caught PD', 'Diabetes',
+                                                                                             'Dead']:
+
+        # Perform screening
+        if health_state == "Uncaught PD":
+            # Probability of catching pre-diabetes during screening
+            catch_prob = screening_success[guideline]['Uncaught PD']
+            if random.random() < catch_prob:
+                health_state = "Caught PD"
+                cost += screening_costs[guideline] * (discount_rate ** (current_year - individual['birth_year']))
+        elif health_state == "Healthy":
+            # Probability of catching pre-diabetes during screening
+            catch_prob = screening_success[guideline]['Healthy']
+            if random.random() < catch_prob:
+                health_state = "Caught PD"
+                cost += screening_costs[guideline] * (discount_rate ** (current_year - individual['birth_year']))
+
+    return health_state, cost
+
 
 # Update the run_simulation function:
 
