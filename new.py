@@ -236,11 +236,12 @@ def calculate_effectiveness(population, guideline):
     caught_pd_count = 0
     uncaught_pd_count = 0
     for individual in population:
-        if individual['health_state'] == 'Caught PD' and individual['selected_guideline'] == guideline:
+        if individual['health_state'] == 'Caught PD':
             caught_pd_count += 1
         if individual['health_state'] == 'Uncaught PD':
             uncaught_pd_count += 1
     return caught_pd_count / (caught_pd_count + uncaught_pd_count)
+
 
 effectiveness_USPSTF = calculate_effectiveness(population_USPSTF, "USPSTF")
 effectiveness_ADA = calculate_effectiveness(population_ADA, "ADA")
