@@ -22,16 +22,16 @@ transition_probabilities = {
 # Define the annual costs associated with different health states
 state_costs = {
     'USPSTF': {
-        'Healthy': 0,
-        'Uncaught PD': 100,
-        'Caught PD': 100,
-        'Diabetes': 500,
+        'Healthy': 65,
+        'Uncaught PD': 65,
+        'Caught PD': 65,
+        'Diabetes': 65,
     },
     'ADA': {
-        'Healthy': 0,
-        'Uncaught PD': 100,
-        'Caught PD': 100,
-        'Diabetes': 600,
+        'Healthy': 65,
+        'Uncaught PD': 65,
+        'Caught PD': 65,
+        'Diabetes': 65,
     },
     'AACE': {
         'Healthy': 0,
@@ -201,6 +201,7 @@ def sensitivity_analysis(input_params, num_simulations=10):
     for guideline in ["USPSTF", "ADA", "AACE"]:
         results[guideline] = {}
         for dr in discount_rates:
+            discount_rate = dr
             for si in screening_intervals:
                 costs_samples = []
                 utilities_samples = []
@@ -208,7 +209,7 @@ def sensitivity_analysis(input_params, num_simulations=10):
                 for _ in range(num_simulations):
                     population = generate_hypothetical_population(1000)
                     results_, costs_, utilities_ = run_simulation(
-                        population, 10, guideline, si, 18, 90, dr
+                        population, 10, guideline, si, 18, 90
                     )
                     costs_samples.append(costs_[guideline])
                     utilities_samples.append(utilities_[guideline])
@@ -271,3 +272,79 @@ for guideline in sensitivity_results:
             f"    Cost: {values['cost_mean']} (CI: {values['cost_ci']})\n"
             f"    Utility: {values['utility_mean']} (CI: {values['utility_ci']})"
         )
+
+def calculate_effectiveness(population, guideline):
+    caught_pd_count = 0
+    uncaught_pd_count = 0
+    for individual in population:
+        if individual['health_state'] == 'Caught PD':
+            caught_pd_count += 1
+        if individual['health_state'] == 'Uncaught PD':
+            uncaught_pd_count += 1
+    return caught_pd_count / (caught_pd_count + uncaught_pd_count)
+
+
+effectiveness_USPSTF = calculate_effectiveness(population_USPSTF, "USPSTF")
+effectiveness_ADA = calculate_effectiveness(population_ADA, "ADA")
+effectiveness_AACE = calculate_effectiveness(population_AACE, "AACE")
+
+# Calculate incremental cost-effectiveness ratio (ICER)
+def calculate_ICER(costs_base, costs_comparator, effectiveness_base, effectiveness_comparator):
+    delta_cost = costs_comparator - costs_base
+    delta_effectiveness = effectiveness_comparator - effectiveness_base
+    if delta_effectiveness == 0:
+        return float('inf')
+    return delta_cost / delta_effectiveness
+
+ICER_ADA_vs_USPSTF = calculate_ICER(costs_USPSTF['USPSTF'], costs_ADA['ADA'], effectiveness_USPSTF, effectiveness_ADA)
+ICER_AACE_vs_USPSTF = calculate_ICER(costs_USPSTF['USPSTF'], costs_AACE['AACE'], effectiveness_USPSTF, effectiveness_AACE)
+ICER_AACE_vs_ADA = calculate_ICER(costs_ADA['ADA'], costs_AACE['AACE'], effectiveness_ADA, effectiveness_AACE)
+
+print("\nCost-Effectiveness:")
+print("USPSTF: Effectiveness =", effectiveness_USPSTF)
+print("ADA: Effectiveness =", effectiveness_ADA)
+print("AACE: Effectiveness =", effectiveness_AACE)
+
+print("\nIncremental Cost-Effectiveness Ratios (ICERs):")
+print("ADA vs. USPSTF:", ICER_ADA_vs_USPSTF)
+print("AACE vs. USPSTF:", ICER_AACE_vs_USPSTF)
+print("AACE vs. ADA:", ICER_AACE_vs_ADA)
+
+# Sensitivity analysis
+screening_success_values = [0.1, 0.3, 0.5, 0.7, 0.9]
+
+print("\nSensitivity Analysis:")
+
+for success_value in screening_success_values:
+    screening_success_temp = {
+        'USPSTF': {'Healthy': success_value, 'Uncaught PD': success_value},
+        'ADA': {'Healthy': success_value, 'Uncaught PD': success_value},
+        'AACE': {'Healthy': success_value, 'Uncaught PD': success_value},
+    }
+    screening_success = screening_success_temp
+
+    # Run the modified code
+    population_USPSTF = generate_hypothetical_population(1000)
+    results_USPSTF, costs_USPSTF, utilities_USPSTF  = run_simulation(population_USPSTF, 10, "USPSTF", 3, 18, 90)
+
+    population_ADA = generate_hypothetical_population(1000)
+    results_ADA, costs_ADA, utilities_ADA = run_simulation(population_ADA, 10, "ADA",  3, 18, 90)
+
+    population_AACE = generate_hypothetical_population(1000)
+    results_AACE, costs_AACE, utilities_AACE= run_simulation(population_AACE, 10, "AACE",  3, 18, 90)
+
+    effectiveness_USPSTF = calculate_effectiveness(population_USPSTF, "USPSTF")
+    effectiveness_ADA = calculate_effectiveness(population_ADA, "ADA")
+    effectiveness_AACE = calculate_effectiveness(population_AACE, "AACE")
+
+    ICER_ADA_vs_USPSTF = calculate_ICER(costs_USPSTF['USPSTF'], costs_ADA['ADA'], effectiveness_USPSTF,
+                                        effectiveness_ADA)
+    ICER_AACE_vs_USPSTF = calculate_ICER(costs_USPSTF['USPSTF'], costs_AACE['AACE'], effectiveness_USPSTF,
+                                         effectiveness_AACE)
+    ICER_AACE_vs_ADA = calculate_ICER(costs_ADA['ADA'], costs_AACE['AACE'], effectiveness_ADA, effectiveness_AACE)
+
+    print("\nScreening success rate: {:.1f}".format(success_value))
+    print("Incremental Cost-Effectiveness Ratios (ICERs):")
+    print("ADA vs. USPSTF:", ICER_ADA_vs_USPSTF)
+    print("AACE vs. USPSTF:", ICER_AACE_vs_USPSTF)
+    print("AACE vs. ADA:", ICER_AACE_vs_ADA)
