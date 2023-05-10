@@ -7,11 +7,11 @@ import random
 transition_probabilities = {
     'Healthy': {'Healthy': 0.791, 'Uncaught PD': 0.186, 'Caught PD': 0.0, 'Diabetes': 0.033},
     'Uncaught PD': {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172},
-    'Caught PD':  {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172},
-    'Diabetes': {'Healthy': 0.078, 'Uncaught PD': 0.197, 'Caught PD': 0.0, 'Diabetes': 0.725},
+    'Caught PD':  {'Healthy': 0.513, 'Uncaught PD': 0.0, 'Caught PD': 0.1, 'Diabetes': 0.172},
+    'Diabetes': {'Healthy': 0.0, 'Uncaught PD': 0.0, 'Caught PD': 0.0, 'Diabetes': 1.0},
 }
 
-# Define the costs associated with different health states
+# Define the annual costs associated with different health states
 state_costs = {
     'USPSTF': {
         'Healthy': 0,
@@ -74,11 +74,7 @@ def generate_hypothetical_population(n):
             individual['PCOS'] = 0  # Male individuals don't have PCOS
         population.append(individual)
     return population
-screening_ages = {
-    'USPSTF': {'Healthy': 40, 'Uncaught PD': 40},
-    'ADA': {'Healthy': 45, 'Uncaught PD': 45},
-    'AACE': {'Healthy': 45, 'Uncaught PD': 45},
-}
+
 
 screening_success = {
     'USPSTF': {'Healthy': 0.1, 'Uncaught PD': 0.5},
@@ -132,20 +128,6 @@ def is_eligible_for_screening(individual, recommendation, current_year):
         return age >= 45 and risk_factor_count >= 2
     else:
         return False
-# has issue here
-'''def select_screening_guideline(individual, current_year):  # Add current_year as an argument
-    eligible_guidelines = []
-    if is_eligible_for_screening(individual, "USPSTF", current_year):
-        eligible_guidelines.append("USPSTF")
-    if is_eligible_for_screening(individual, "ADA", current_year):
-        eligible_guidelines.append("ADA")
-    if is_eligible_for_screening(individual, "AACE", current_year):
-        eligible_guidelines.append("AACE")
-    if len(eligible_guidelines) > 0:
-        selected_guideline = np.random.choice(eligible_guidelines)
-    else:
-        selected_guideline = None
-    return selected_guideline'''
 
 
 #  If they are eligible and not in one of the excluded health states, the screening is performed.
@@ -198,7 +180,6 @@ def run_simulation(population, num_years, selected_guideline):
     return screened_counts, costs
 
 
-
 # Run the modified code
 population_USPSTF = generate_hypothetical_population(1000)
 results_USPSTF, costs_USPSTF = run_simulation(population_USPSTF, 10, "USPSTF")
@@ -216,17 +197,23 @@ results_AACE, costs_AACE = run_simulation(population_AACE, 10, "AACE")
 print("Screened counts for USPSTF guideline:")
 #print(df_results_USPSTF)
 print("\nTotal costs for USPSTF guideline:")
-print(costs_USPSTF)
+print(costs_USPSTF['USPSTF'])
+print(("\nTotal utility for USPSTF guideline:"))
+print('ADD INFO HERE')
 
 print("\nScreened counts for ADA guideline:")
 #print(df_results_ADA)
 print("\nTotal costs for ADA guideline:")
-print(costs_ADA)
+print(costs_ADA['ADA'])
+print(("\nTotal utility for ADA guideline:"))
+print('ADD INFO HERE')
 
 print("\nScreened counts for AACE guideline:")
 #print(df_results_AACE)
 print("\nTotal costs for AACE guideline:")
-print(costs_AACE)
+print(costs_AACE['AACE'])
+print(("\nTotal utility for AACE guideline:"))
+print('ADD INFO HERE')
 
 # cost effective analysis part
 # ... [Keep the previous parts of the code]
@@ -269,7 +256,6 @@ print("ADA vs. USPSTF:", ICER_ADA_vs_USPSTF)
 print("AACE vs. USPSTF:", ICER_AACE_vs_USPSTF)
 print("AACE vs. ADA:", ICER_AACE_vs_ADA)
 
-# sensitivity analysis
 # Sensitivity analysis
 screening_success_values = [0.1, 0.3, 0.5, 0.7, 0.9]
 
