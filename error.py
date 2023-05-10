@@ -3,7 +3,6 @@ import pandas as pd
 import random
 from scipy import stats
 
-
 discount_rate = 0.03
 def calculate_ICER(cost1, cost2, utility1, utility2):
     delta_cost = cost2 - cost1
