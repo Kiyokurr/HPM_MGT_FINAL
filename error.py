@@ -163,13 +163,6 @@ def screen_individual(individual, guideline, current_year):
 
     return cost
 
-def apply_chosen_guideline_to_population(population, guideline, current_year, screening_interval, min_age, max_age):
-    screened_individuals = []
-    for individual in population:
-        if is_eligible_for_screening(individual, guideline, current_year, screening_interval, min_age, max_age):
-            screened_individuals.append(individual)
-    return screened_individuals
-
         # Update the run_simulation function:
 def run_simulation(population, num_years, selected_guideline, screening_interval, min_age, max_age):
     costs = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
@@ -179,18 +172,17 @@ def run_simulation(population, num_years, selected_guideline, screening_interval
     for year in range(num_years):
         current_year = year
 
-        screened_individuals = apply_chosen_guideline_to_population(population, selected_guideline, current_year,
-                                                                    screening_interval, min_age, max_age)
-        screened_counts[selected_guideline] += len(screened_individuals)
-
-        for individual in screened_individuals:
-            additional_cost = (screen_individual(individual, selected_guideline, current_year)
-                               + state_costs[selected_guideline][individual['health_state']])
-            individual['cost'] += additional_cost
-            costs[selected_guideline] += additional_cost
-            utilities_qalys[selected_guideline] += (utilities[individual['health_state']]
+        for individual in population:
+            if is_eligible_for_screening(individual, selected_guideline, current_year, screening_interval, min_age, max_age):
+                screened_counts[selected_guideline] += 1
+                additional_cost = (screen_individual(individual, selected_guideline, current_year)
+                               + state_costs[selected_guideline][individual['health_state']]) # Add annual costs
+                individual['cost'] += additional_cost
+                costs[selected_guideline] += additional_cost
+                utilities_qalys[selected_guideline] += (utilities[individual['health_state']]
                                                     * (1 / (1 + discount_rate) ** (
                                 current_year - individual['last_screened'])))
+
     return screened_counts, costs, utilities_qalys
 
 def sensitivity_analysis(input_params, num_simulations=10):
