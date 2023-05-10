@@ -275,9 +275,10 @@ total_diabetes = sum([1 for individual in generate_hypothetical_population(pop_s
 percent_diabetes = (total_diabetes / pop_size) * 100
 
 print("\nTotal costs and utilities for each guideline with confidence intervals:")
-print("USPSTF: \nCost =", costs_USPSTF['USPSTF'], "\nUtility =", utilities_USPSTF['USPSTF'], "\nCI for cost =", cost_ci['USPSTF'], "\nCI for utility =", utility_ci['USPSTF'])
-print("\nADA: Cost =", costs_USPSTF['ADA'], "\nUtility =", utilities_USPSTF['ADA'], "\nCI for cost =", cost_ci['ADA'], "\nCI for utility =", utility_ci['ADA'])
-print("\nAACE: Cost =", costs_USPSTF['AACE'], "\nUtility =", utilities_USPSTF['AACE'], "\nCI for cost =", cost_ci['AACE'], "\nCI for utility =", utility_ci['AACE'])
+print("USPSTF: \nCost =", costs_USPSTF['USPSTF'], "\nUtility =", utilities_USPSTF['USPSTF'], "\nCI for cost =", cost_ci['USPSTF'], "\nCI for utility =", utility_ci['USPSTF'], "\nNumber of screenings =", results_USPSTF['USPSTF'])
+print("\nADA: Cost =", costs_USPSTF['ADA'], "\nUtility =", utilities_USPSTF['ADA'], "\nCI for cost =", cost_ci['ADA'], "\nCI for utility =", utility_ci['ADA'], "\nNumber of screenings =", results_ADA['ADA'])
+print("\nAACE: Cost =", costs_USPSTF['AACE'], "\nUtility =", utilities_USPSTF['AACE'], "\nCI for cost =", cost_ci['AACE'], "\nCI for utility =", utility_ci['AACE'], "\nNumber of screenings =", results_AACE['AACE'])
+print("\nPercentage of total population with diabetes: {:.2f}%".format(percent_diabetes))
 print("\nSensitivity Analysis Results:")
 for guideline in sensitivity_results:
     print(f"\n{guideline}:")
