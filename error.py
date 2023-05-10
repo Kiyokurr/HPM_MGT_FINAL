@@ -341,13 +341,13 @@ for success_value in screening_success_values:
 
     # Run the modified code
     population_USPSTF = generate_hypothetical_population(1000)
-    results_USPSTF, costs_USPSTF, utilities_USPSTF  = run_simulation(population_USPSTF, 10, "USPSTF", 3, 18, 90)
+    results_USPSTF, costs_USPSTF, utilities_USPSTF  = run_simulation(population_USPSTF, 30, "USPSTF", 3, 18, 90)
 
     population_ADA = generate_hypothetical_population(1000)
-    results_ADA, costs_ADA, utilities_ADA = run_simulation(population_ADA, 10, "ADA",  3, 18, 90)
+    results_ADA, costs_ADA, utilities_ADA = run_simulation(population_ADA, 30, "ADA",  3, 18, 90)
 
     population_AACE = generate_hypothetical_population(1000)
-    results_AACE, costs_AACE, utilities_AACE= run_simulation(population_AACE, 10, "AACE",  3, 18, 90)
+    results_AACE, costs_AACE, utilities_AACE= run_simulation(population_AACE, 30, "AACE",  3, 18, 90)
 
     effectiveness_USPSTF = calculate_effectiveness(population_USPSTF, "USPSTF")
     effectiveness_ADA = calculate_effectiveness(population_ADA, "ADA")
