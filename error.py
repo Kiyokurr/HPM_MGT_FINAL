@@ -137,11 +137,28 @@ def is_eligible_for_screening(individual, recommendation, current_year, screenin
     risk_factor_count = sum(risk_factors.values())
 
     if recommendation == "USPSTF":
-        return 40 <= age <= 70 and BMI >= 25
+        if 40 <= age <= 70 and BMI >= 25:
+            if current_year - last_screened < screening_interval:
+                return False
+            else:
+                return True
     elif recommendation == "ADA":
-        return age >= 45 or (BMI >= 25 and risk_factor_count >= 1)
+        if age >= 45 or (BMI >= 25 and risk_factor_count >= 1):
+            if current_year - last_screened < screening_interval:
+                return False
+            else:
+                return True
     elif recommendation == "AACE":
-        return age >= 45 and risk_factor_count >= 2
+            if risk_factor_count >= 2:
+                if current_year - last_screened < 1:
+                    return False
+                else:
+                    return True
+            else:
+                if current_year - last_screened < screening_interval:
+                    return False
+                else:
+                    return True
     else:
         return False
 
@@ -150,9 +167,11 @@ def screen_individual(individual, guideline, current_year):
     cost = 0
 
     # Check if individual is eligible for screening
+    # If the screening is successful and someone has “Healthy,” nothing happens. Screening is successful 100% of the time when “Healthy.”
     if health_state in ["Healthy", "Uncaught PD"]:
         # Perform screening
         catch_prob = screening_success[guideline][health_state]
+        #If the screening is successful and someone has “Uncaught PD,” their health state is changed to “Caught PD.”
         if random.random() < catch_prob:
             health_state = "Caught PD"
         cost += screening_costs[guideline] * (1 / (1 + discount_rate) ** (current_year - individual['last_screened']))
@@ -172,15 +191,18 @@ def run_simulation(population, num_years, selected_guideline, screening_interval
         current_year = year
 
         for individual in population:
-            individual['cost'] += state_costs[selected_guideline][individual['health_state']]# Add annual costs
-            if is_eligible_for_screening(individual, selected_guideline, current_year, screening_interval, min_age, max_age):
+            individual['cost'] += state_costs[selected_guideline][individual['health_state']] * (
+                    1 / (1 + discount_rate) ** current_year)  # Add annual costs and apply the discount rate
+            if is_eligible_for_screening(individual, selected_guideline, current_year, screening_interval, min_age,
+                                         max_age):
                 screened_counts[selected_guideline] += 1
                 additional_cost = (screen_individual(individual, selected_guideline, current_year))
-                individual['cost'] += additional_cost
+                individual['cost'] += additional_cost * (
+                        1 / (1 + discount_rate) ** (current_year - individual['last_screened']))
                 costs[selected_guideline] += additional_cost
                 utilities_qalys[selected_guideline] += (utilities[individual['health_state']]
-                                                    * (1 / (1 + discount_rate) ** (
-                                current_year - individual['last_screened'])))
+                                                        * (1 / (1 + discount_rate) ** (
+                        current_year - individual['last_screened'])))
 
     return screened_counts, costs, utilities_qalys
 
