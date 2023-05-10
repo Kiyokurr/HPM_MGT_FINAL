@@ -318,7 +318,7 @@ print("USPSTF: Effectiveness =", effectiveness_USPSTF)
 print("ADA: Effectiveness =", effectiveness_ADA)
 print("AACE: Effectiveness =", effectiveness_AACE)
 
-print("\nIncremental Cost-Effectiveness Ratios (ICERs):")
+print("\nIncremental Cost-Effectiveness Ratios (ICERs): ")
 print("ADA vs. USPSTF:", ICER_ADA_vs_USPSTF)
 print("AACE vs. USPSTF:", ICER_AACE_vs_USPSTF)
 print("AACE vs. ADA:", ICER_AACE_vs_ADA)
