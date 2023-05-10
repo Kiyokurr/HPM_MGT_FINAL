@@ -183,9 +183,9 @@ def screen_individual(individual, guideline, current_year):
 
         # Update the run_simulation function:
 def run_simulation(population, num_years, selected_guideline, screening_interval, min_age, max_age):
-    costs = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
-    screened_counts = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
-    utilities_qalys = {'USPSTF': 0, 'ADA': 0, 'AACE': 0}
+    costs = 0
+    screened_counts = 0
+    utilities_qalys = 0
 
     for year in range(num_years):
         current_year = year
@@ -195,17 +195,15 @@ def run_simulation(population, num_years, selected_guideline, screening_interval
                     1 / (1 + discount_rate) ** current_year)  # Add annual costs and apply the discount rate
             if is_eligible_for_screening(individual, selected_guideline, current_year, screening_interval, min_age,
                                          max_age):
-                screened_counts[selected_guideline] += 1
+                screened_counts += 1
                 additional_cost = (screen_individual(individual, selected_guideline, current_year))
                 individual['cost'] += additional_cost * (
                         1 / (1 + discount_rate) ** (current_year - individual['last_screened']))
-                costs[selected_guideline] += additional_cost
-                utilities_qalys[selected_guideline] += (utilities[individual['health_state']]
-                                                        * (1 / (1 + discount_rate) ** (
-                        current_year - individual['last_screened'])))
+                costs += additional_cost
+                utilities_qalys += utilities[individual['health_state']] * (
+                        1 / (1 + discount_rate) ** (current_year - individual['last_screened']))
 
     return screened_counts, costs, utilities_qalys
-
 def sensitivity_analysis(input_params, num_simulations=10):
     discount_rates = input_params['discount_rates']
     screening_intervals = input_params['screening_intervals']
@@ -224,8 +222,8 @@ def sensitivity_analysis(input_params, num_simulations=10):
                     results_, costs_, utilities_ = run_simulation(
                         population, 10, guideline, si, 18, 90
                     )
-                    costs_samples.append(costs_[guideline])
-                    utilities_samples.append(utilities_[guideline])
+                    costs_samples.append(costs_)
+                    utilities_samples.append(utilities_)
 
                 cost_ci = calculate_confidence_interval(costs_samples)
                 utility_ci = calculate_confidence_interval(utilities_samples)
@@ -249,35 +247,34 @@ utilities_samples = {'USPSTF': [], 'ADA': [], 'AACE': []}
 
 for _ in range(num_simulations):
     population_USPSTF = generate_hypothetical_population(1000)
-    results_USPSTF, costs_USPSTF, utilities_USPSTF = run_simulation(population_USPSTF, 10, "USPSTF", 3, 40, 70)
-    costs_samples['USPSTF'].append(costs_USPSTF['USPSTF'])
-    utilities_samples['USPSTF'].append(utilities_USPSTF['USPSTF'])
+    results_USPSTF, costs_USPSTF, utilities_USPSTF = run_simulation(population_USPSTF, 30, "USPSTF", 3, 40, 70)
+    costs_samples['USPSTF'].append(costs_USPSTF)
+    utilities_samples['USPSTF'].append(utilities_USPSTF)
 
     population_ADA = generate_hypothetical_population(1000)
-    results_ADA, costs_ADA, utilities_ADA = run_simulation(population_ADA, 10, "ADA", 3, 18, 90)
-    costs_samples['ADA'].append(costs_ADA['ADA'])
-    utilities_samples['ADA'].append(utilities_ADA['ADA'])
+    results_ADA, costs_ADA, utilities_ADA = run_simulation(population_ADA, 30, "ADA", 3, 18, 90)
+    costs_samples['ADA'].append(costs_ADA)
+    utilities_samples['ADA'].append(utilities_ADA)
 
     population_AACE = generate_hypothetical_population(1000)
-    results_AACE, costs_AACE, utilities_AACE = run_simulation(population_AACE, 10, "AACE", 3, 18, 90)
-    costs_samples['AACE'].append(costs_AACE['AACE'])
-    utilities_samples['AACE'].append(utilities_AACE['AACE'])
+    results_AACE, costs_AACE, utilities_AACE = run_simulation(population_AACE, 30, "AACE", 3, 18, 90)
+    costs_samples['AACE'].append(costs_AACE)
+    utilities_samples['AACE'].append(utilities_AACE)
 
 cost_ci = {key: calculate_confidence_interval(costs_samples[key]) for key in costs_samples}
 utility_ci = {key: calculate_confidence_interval(utilities_samples[key]) for key in utilities_samples}
 
-ICER_USPSTF_ADA = calculate_ICER(costs_USPSTF['USPSTF'], costs_ADA['ADA'], utilities_USPSTF['USPSTF'], utilities_ADA['ADA'])
-ICER_USPSTF_AACE = calculate_ICER(costs_USPSTF['USPSTF'], costs_AACE['AACE'], utilities_USPSTF['USPSTF'], utilities_AACE['AACE'])
-ICER_ADA_AACE = calculate_ICER(costs_ADA['ADA'], costs_AACE['AACE'], utilities_ADA['ADA'], utilities_AACE['AACE'])
-
+ICER_USPSTF_ADA = calculate_ICER(costs_USPSTF, costs_ADA, utilities_USPSTF, utilities_ADA)
+ICER_USPSTF_AACE = calculate_ICER(costs_USPSTF, costs_AACE, utilities_USPSTF, utilities_AACE)
+ICER_ADA_AACE = calculate_ICER(costs_ADA, costs_AACE, utilities_ADA, utilities_AACE)
 pop_size = 1000
 total_diabetes = sum([1 for individual in generate_hypothetical_population(pop_size) if individual['health_state'] == 'Diabetes'])
 percent_diabetes = (total_diabetes / pop_size) * 100
 
 print("\nTotal costs and utilities for each guideline with confidence intervals:")
-print("USPSTF: \nCost =", costs_USPSTF['USPSTF'], "\nUtility =", utilities_USPSTF['USPSTF'], "\nCI for cost =", cost_ci['USPSTF'], "\nCI for utility =", utility_ci['USPSTF'], "\nNumber of screenings =", results_USPSTF['USPSTF'])
-print("\nADA: Cost =", costs_USPSTF['ADA'], "\nUtility =", utilities_USPSTF['ADA'], "\nCI for cost =", cost_ci['ADA'], "\nCI for utility =", utility_ci['ADA'], "\nNumber of screenings =", results_ADA['ADA'])
-print("\nAACE: Cost =", costs_USPSTF['AACE'], "\nUtility =", utilities_USPSTF['AACE'], "\nCI for cost =", cost_ci['AACE'], "\nCI for utility =", utility_ci['AACE'], "\nNumber of screenings =", results_AACE['AACE'])
+print("USPSTF: \nCost =", costs_USPSTF, "\nUtility =", utilities_USPSTF, "\nCI for cost =", cost_ci['USPSTF'], "\nCI for utility =", utility_ci['USPSTF'], "\nNumber of screenings =", results_USPSTF)
+print("\nADA: Cost =", costs_ADA, "\nUtility =", utilities_ADA, "\nCI for cost =", cost_ci['ADA'], "\nCI for utility =", utility_ci['ADA'], "\nNumber of screenings =", results_ADA)
+print("\nAACE: Cost =", costs_AACE, "\nUtility =", utilities_AACE, "\nCI for cost =", cost_ci['AACE'], "\nCI for utility =", utility_ci['AACE'], "\nNumber of screenings =", results_AACE)
 print("\nPercentage of total population with diabetes: {:.2f}%".format(percent_diabetes))
 print("\nSensitivity Analysis Results:")
 for guideline in sensitivity_results:
@@ -312,9 +309,9 @@ def calculate_ICER(costs_base, costs_comparator, effectiveness_base, effectivene
         return float('inf')
     return delta_cost / delta_effectiveness
 
-ICER_ADA_vs_USPSTF = calculate_ICER(costs_USPSTF['USPSTF'], costs_ADA['ADA'], effectiveness_USPSTF, effectiveness_ADA)
-ICER_AACE_vs_USPSTF = calculate_ICER(costs_USPSTF['USPSTF'], costs_AACE['AACE'], effectiveness_USPSTF, effectiveness_AACE)
-ICER_AACE_vs_ADA = calculate_ICER(costs_ADA['ADA'], costs_AACE['AACE'], effectiveness_ADA, effectiveness_AACE)
+ICER_ADA_vs_USPSTF = calculate_ICER(costs_USPSTF, costs_ADA, effectiveness_USPSTF, effectiveness_ADA)
+ICER_AACE_vs_USPSTF = calculate_ICER(costs_USPSTF, costs_AACE, effectiveness_USPSTF, effectiveness_AACE)
+ICER_AACE_vs_ADA = calculate_ICER(costs_ADA, costs_AACE, effectiveness_ADA, effectiveness_AACE)
 
 print("\nCost-Effectiveness:")
 print("USPSTF: Effectiveness =", effectiveness_USPSTF)
@@ -353,11 +350,11 @@ for success_value in screening_success_values:
     effectiveness_ADA = calculate_effectiveness(population_ADA, "ADA")
     effectiveness_AACE = calculate_effectiveness(population_AACE, "AACE")
 
-    ICER_ADA_vs_USPSTF = calculate_ICER(costs_USPSTF['USPSTF'], costs_ADA['ADA'], effectiveness_USPSTF,
+    ICER_ADA_vs_USPSTF = calculate_ICER(costs_USPSTF, costs_ADA, effectiveness_USPSTF,
                                         effectiveness_ADA)
-    ICER_AACE_vs_USPSTF = calculate_ICER(costs_USPSTF['USPSTF'], costs_AACE['AACE'], effectiveness_USPSTF,
+    ICER_AACE_vs_USPSTF = calculate_ICER(costs_USPSTF, costs_AACE, effectiveness_USPSTF,
                                          effectiveness_AACE)
-    ICER_AACE_vs_ADA = calculate_ICER(costs_ADA['ADA'], costs_AACE['AACE'], effectiveness_ADA, effectiveness_AACE)
+    ICER_AACE_vs_ADA = calculate_ICER(costs_ADA, costs_AACE, effectiveness_ADA, effectiveness_AACE)
 
     print("\nScreening success rate: {:.1f}".format(success_value))
     print("Incremental Cost-Effectiveness Ratios (ICERs):")
