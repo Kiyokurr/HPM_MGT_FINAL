@@ -15,36 +15,36 @@ def calculate_ICER(cost1, cost2, utility1, utility2):
 transition_probabilities = {
     'Healthy': {'Healthy': 0.791, 'Uncaught PD': 0.186, 'Caught PD': 0.0, 'Diabetes': 0.033},
     'Uncaught PD': {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172},
-    'Caught PD':  {'Healthy': 0.513, 'Uncaught PD': 0.0, 'Caught PD': 0.1, 'Diabetes': 0.172},
+    'Caught PD':  {'Healthy': 0.186, 'Uncaught PD': 0.0, 'Caught PD': 0.791, 'Diabetes': 0.033},
     'Diabetes': {'Healthy': 0.0, 'Uncaught PD': 0.0, 'Caught PD': 0.0, 'Diabetes': 1.0},
 }
 
 # Define the annual costs associated with different health states
 state_costs = {
     'USPSTF': {
-        'Healthy': 65,
-        'Uncaught PD': 65,
-        'Caught PD': 65,
-        'Diabetes': 65,
+        'Healthy': 0,
+        'Uncaught PD': 500,
+        'Caught PD': 500,
+        'Diabetes': 9600,
     },
     'ADA': {
-        'Healthy': 65,
-        'Uncaught PD': 65,
-        'Caught PD': 65,
-        'Diabetes': 65,
+        'Healthy': 0,
+        'Uncaught PD': 500,
+        'Caught PD': 500,
+        'Diabetes': 9600,
     },
     'AACE': {
         'Healthy': 0,
-        'Uncaught PD': 150,
-        'Caught PD': 150,
-        'Diabetes': 700,
+        'Uncaught PD': 500,
+        'Caught PD': 500,
+        'Diabetes': 9600,
     }
 }
 
 utilities = {
     'Healthy': 1,
-    'Uncaught PD': 0.9,
-    'Caught PD': 0.95,
+    'Uncaught PD': 0.85,
+    'Caught PD': 0.85,
     'Diabetes': 0.8
 }
 
@@ -53,28 +53,28 @@ def generate_hypothetical_population(n):
     population = []
     for _ in range(n):
         gender = np.random.choice(['male', 'female'])
-        age = np.random.randint(18, 90)
+        age = np.random.randint(18, 64)
         pregnant = False
         if gender == 'female' and 18 <= age <= 45:
             pregnant = np.random.choice([False, True], p=[0.95, 0.05])
         individual = {
             'age': age,
-            'BMI': np.random.normal(loc=23, scale=4),
+            'BMI': np.random.normal(loc=26.5, scale=4),
             'gender': gender,
             'pregnant': pregnant,
             'gestational_diabetes': 0,
-            'family_history': np.random.choice([0, 1], p=[0.8, 0.2]),
-            'race_ethnicity': np.random.choice(['low_risk', 'high_risk'], p=[0.7, 0.3]),
-            'physical_inactivity': int(np.random.choice([0, 1], p=[0.6, 0.4])),
-            'hypertension': int(np.random.choice([0, 1], p=[0.7, 0.3])),
-            'glucose_tolerance': int(np.random.choice([0, 1], p=[0.85, 0.15])),
+            'family_history': np.random.choice([0, 1], p=[0.887, 0.113]),
+            'race_ethnicity': np.random.choice(['low_risk', 'high_risk'], p=[0.601, 0.399]),
+            'physical_inactivity': int(np.random.choice([0, 1], p=[0.75, 0.25])),
+            'hypertension': int(np.random.choice([0, 1], p=[0.53, 0.47])),
+            'glucose_tolerance': int(np.random.choice([0, 1], p=[0.888, 0.112])),
             'PCOS': int(np.random.choice([0, 1], p=[0.9, 0.1])),
-            'history_of_CVD': int(np.random.choice([0, 1], p=[0.9, 0.1])),
+            'history_of_CVD': int(np.random.choice([0, 1], p=[0.799, 0.201])),
             'baby_weight_risk': int(np.random.choice([0, 1], p=[0.9, 0.1])),
-            'antipsychotic_therapy': int(np.random.choice([0, 1], p=[0.95, 0.05])),
-            'sleep_disorder_risk': int(np.random.choice([0, 1], p=[0.9, 0.1])),
-            'health_state': np.random.choice(['Healthy', 'Uncaught PD', 'Caught PD', 'Diabetes'], p=[0.7, 0.25, 0, 0.05]),
-            'last_screened': -999, # -999 means this person has never screen before
+            'antipsychotic_therapy': int(np.random.choice([0, 1], p=[0.984, 0.016])),
+            'sleep_disorder_risk': int(np.random.choice([0, 1], p=[0.875, 0.125])),
+            'health_state': np.random.choice(['Healthy', 'Uncaught PD', 'Caught PD', 'Diabetes'], p=[0.51, 0.304, 0.076,0.11]),
+            'last_screened': -999, # -999 means this person has never screened before
             'TG': np.random.normal(loc=129, scale=50),
             'cost': 0,
         }
@@ -91,15 +91,15 @@ def generate_hypothetical_population(n):
     return population
 
 screening_success = {
-    'USPSTF': {'Healthy': 0.1, 'Uncaught PD': 0.5},
-    'ADA': {'Healthy': 0.1, 'Uncaught PD': 0.5},
-    'AACE': {'Healthy': 0.1, 'Uncaught PD': 0.5},
+    'USPSTF': {'Healthy': 1, 'Uncaught PD': 0.98},
+    'ADA': {'Healthy': 1, 'Uncaught PD': 0.98},
+    'AACE': {'Healthy': 1, 'Uncaught PD': 0.98},
 }
 
 screening_costs = {
-    'USPSTF': 100,
-    'ADA': 100,
-    'AACE': 150,
+    'USPSTF': 65,
+    'ADA': 65,
+    'AACE': 65,
 }
 
 def calculate_confidence_interval(data, confidence=0.95):
@@ -138,7 +138,7 @@ def is_eligible_for_screening(individual, recommendation, current_year, screenin
     risk_factor_count = sum(risk_factors.values())
 
     if recommendation == "USPSTF":
-        return min_age <= age <= max_age and BMI >= 25
+        return 40 <= age <= 70 and BMI >= 25
     elif recommendation == "ADA":
         return age >= 45 or (BMI >= 25 and risk_factor_count >= 1)
     elif recommendation == "AACE":
@@ -173,10 +173,10 @@ def run_simulation(population, num_years, selected_guideline, screening_interval
         current_year = year
 
         for individual in population:
+            individual['cost'] += state_costs[selected_guideline][individual['health_state']]# Add annual costs
             if is_eligible_for_screening(individual, selected_guideline, current_year, screening_interval, min_age, max_age):
                 screened_counts[selected_guideline] += 1
-                additional_cost = (screen_individual(individual, selected_guideline, current_year)
-                               + state_costs[selected_guideline][individual['health_state']]) # Add annual costs
+                additional_cost = (screen_individual(individual, selected_guideline, current_year))
                 individual['cost'] += additional_cost
                 costs[selected_guideline] += additional_cost
                 utilities_qalys[selected_guideline] += (utilities[individual['health_state']]
@@ -254,8 +254,10 @@ total_diabetes = sum([1 for individual in generate_hypothetical_population(pop_s
 percent_diabetes = (total_diabetes / pop_size) * 100
 
 print("\nTotal costs and utilities for each guideline with confidence intervals:")
-print("USPSTF: Cost =", costs_USPSTF['USPSTF'], "Utility =", utilities_USPSTF['USPSTF'], "CI for cost =", cost_ci['USPSTF'])
-print("Sensitivity Analysis Results:")
+print("USPSTF: \nCost =", costs_USPSTF['USPSTF'], "\nUtility =", utilities_USPSTF['USPSTF'], "\nCI for cost =", cost_ci['USPSTF'], "\nCI for utility =", utility_ci['USPSTF'])
+print("\nADA: Cost =", costs_USPSTF['ADA'], "\nUtility =", utilities_USPSTF['ADA'], "\nCI for cost =", cost_ci['ADA'], "\nCI for utility =", utility_ci['ADA'])
+print("\nAACE: Cost =", costs_USPSTF['AACE'], "\nUtility =", utilities_USPSTF['AACE'], "\nCI for cost =", cost_ci['AACE'], "\nCI for utility =", utility_ci['AACE'])
+print("\nSensitivity Analysis Results:")
 for guideline in sensitivity_results:
     print(f"\n{guideline}:")
     for (dr, si), values in sensitivity_results[guideline].items():
