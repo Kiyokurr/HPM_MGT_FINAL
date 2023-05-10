@@ -3,11 +3,10 @@ import pandas as pd
 
 # Define the transition probabilities between different health states
 transition_probabilities = {
-    'Healthy': {'Healthy': 0.791, 'Uncaught PD': 0.186, 'Caught PD': 0.0, 'Diabetes': 0.033, 'Dead': 0.0},
-    'Uncaught PD': {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172, 'Dead': 0.0},
-    'Caught PD':  {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172, 'Dead': 0.0},
-    'Diabetes': {'Healthy': 0.078, 'Uncaught PD': 0.197, 'Caught PD': 0.0, 'Diabetes': 0.725, 'Dead': 0.0},
-    'Dead': {'Healthy': 0.078, 'Uncaught PD': 0.197, 'Caught PD': 0.0, 'Diabetes': 0.725, 'Dead': 0.0},
+    'Healthy': {'Healthy': 0.791, 'Uncaught PD': 0.186, 'Caught PD': 0.0, 'Diabetes': 0.033},
+    'Uncaught PD': {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172},
+    'Caught PD':  {'Healthy': 0.513, 'Uncaught PD': 0.315, 'Caught PD': 0.0, 'Diabetes': 0.172},
+    'Diabetes': {'Healthy': 0.078, 'Uncaught PD': 0.197, 'Caught PD': 0.0, 'Diabetes': 0.725},
 }
 
 # Define the costs associated with different health states
@@ -17,21 +16,18 @@ state_costs = {
         'Uncaught PD': 100,
         'Caught PD': 100,
         'Diabetes': 500,
-        'Dead': 0,
     },
     'ADA': {
         'Healthy': 0,
         'Uncaught PD': 100,
         'Caught PD': 100,
         'Diabetes': 600,
-        'Dead': 0,
     },
     'AACE': {
         'Healthy': 0,
         'Uncaught PD': 150,
         'Caught PD': 150,
         'Diabetes': 700,
-        'Dead': 0,
     }
 }
 
